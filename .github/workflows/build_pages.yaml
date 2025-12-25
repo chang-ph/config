@@ -1,0 +1,24 @@
+name: build gh-pages
+
+on: [push]
+
+env:
+  BUILD_OUTPUT_FOLDER: build_outputs_folder
+
+jobs:
+  build:
+    name: build-pages
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: build-pages
+      run: |-
+        pip install requests websockets
+        python build_pages.py
+    - name: pub-pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: ${{ env.BUILD_OUTPUT_FOLDER }}
