@@ -7,8 +7,11 @@ env:
 
 jobs:
   build:
-    name: build-pages
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
 
     steps:
     - name: Checkout source code
