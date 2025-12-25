@@ -16,8 +16,8 @@ jobs:
 
     - name: build-pages
       run: |-
-        pip install requests websockets
-        python build_pages.py
+        pip install yaml
+        python .github/workflows/build_pages.py
     - name: pub-pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
