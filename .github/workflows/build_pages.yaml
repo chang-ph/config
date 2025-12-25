@@ -16,7 +16,7 @@ jobs:
 
     - name: build-pages
       run: |-
-        pip install yaml
+        python -m pip install pyyaml
         python .github/workflows/build_pages.py
     - name: pub-pages
       uses: JamesIves/github-pages-deploy-action@v4
