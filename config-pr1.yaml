@@ -1,177 +1,73 @@
-run_model_url: ""
-max_upload_sample_size: 5242880
-max_upload_sample_file: 4
-upload_file_types": '{"csv": ["turing csv", "stan csv"], "nc": ["arviz netcdf"]}'
-google_client_id: '1093329952197-v3oe8gknfun6m13r8a111286pk5kcvd4.apps.googleusercontent.com'
-google_app_id: 'versatile-blend-464708-a0'
-default_model: |-
-  using Pkg
-  Pkg.develop(; path=ARGS[1])  # load Coinfer.jl
-  Pkg.add("Turing")
+default_analyzer: "# /// script\n# dependencies = [\n#    \"arviz>=0.22.0\",\n#  \
+  \  \"bokeh==3.7.3\",\n#    \"requests>=2.32.4\",\n#    \"ruamel-yaml\",\n# ]\n#\
+  \ ///\n\nimport arviz as az\nfrom Coinfer import (\n    render_plots_to_html,\n\
+  \    save_result,\n    current_workflow,\n)\nimport numpy as np\n\ncommon_plot_params\
+  \ = {\n    \"backend\": \"bokeh\",\n    \"show\": False,\n}\n\n\ndef plot_autocorr(xp):\n\
+  \    ret = []\n    for chain in xp.all_chains():\n        chain_inference_data =\
+  \ xp.inference_data[chain]\n        ret.append(('plot_autocorr', chain, \"\", az.plot_autocorr(chain_inference_data,\
+  \ **common_plot_params)))\n    return ret\n\n\ndef plot_ecdf(xp):\n    ret = []\n\
+  \    for chain in xp.all_chains():\n        chain_inference_data = xp.inference_data[chain]\n\
+  \        for var in xp.all_vars():\n            values = chain_inference_data.posterior.sel(chain=chain)[var].values\n\
+  \            if values.dtype == np.bool:\n                continue\n           \
+  \ ret.append(('plot_ecdf', chain, var, az.plot_ecdf(values=values, **common_plot_params)))\n\
+  \    return ret\n\n\ndef plot_dist(xp):\n    ret = []\n    for chain in xp.all_chains():\n\
+  \        chain_inference_data = xp.inference_data[chain]\n        for var in xp.all_vars():\n\
+  \            values = chain_inference_data.posterior.sel(chain=chain)[var].values\n\
+  \            if values.dtype == np.bool:\n                continue\n           \
+  \ ret.append(('plot_dist', chain, var, az.plot_dist(values=values, **common_plot_params)))\n\
+  \    return ret\n\n\ndef plot_dot(xp):\n    ret = []\n    for chain in xp.all_chains():\n\
+  \        chain_inference_data = xp.inference_data[chain]\n        for var in xp.all_vars():\n\
+  \            values = chain_inference_data.posterior.sel(chain=chain)[var].values\n\
+  \            if values.dtype == np.bool:\n                continue\n           \
+  \ ret.append(('plot_dot', chain, var, az.plot_dot(values=values, **common_plot_params)))\n\
+  \    return ret\n\n\ndef analyzer(xp):\n    plots = [\n        *plot_autocorr(xp),\n\
+  \        # *plot_ecdf(xp),\n        # *plot_dist(xp),\n        # *plot_dot(xp),\n\
+  \    ]\n    html = render_plots_to_html(plots)\n    return html.encode('utf-8')\n\
+  \n\ndef main():\n    flow = current_workflow()\n    exp = flow.experiment\n    save_result(analyzer(exp),\
+  \ \"output.html\")\n\n\nif __name__ == '__main__':\n    main()"
+default_data: '"height";"weight";"age";"male"
 
-  using Turing
-  using Coinfer
-
-  flow = Coinfer.current_workflow()
-
-  @model function line(height)
-      μ ~ Normal(178, 20)
-      σ ~ Uniform(0, 50)
-
-      height ~ Normal(μ, σ)
-  end
-
-  flow.model = line
-
-default_data: |-
-  "height";"weight";"age";"male"
   151.765;47.8256065;63;1
+
   139.7;36.4858065;63;0
+
   136.525;31.864838;65;0
+
   156.845;53.0419145;41;1
+
   145.415;41.276872;51;0
+
   163.83;62.992589;35;1
+
   149.225;38.2434755;32;0
+
   168.91;55.4799715;27;1
-  147.955;34.869885;19;0
 
-default_analyzer: |-
-  # /// script
-  # dependencies = [
-  #    "arviz>=0.22.0",
-  #    "bokeh==3.7.3",
-  #    "requests>=2.32.4",
-  #    "ruamel-yaml",
-  # ]
-  # ///
-
-  import arviz as az
-  from Coinfer import (
-      render_plots_to_html,
-      save_result,
-      current_workflow,
-  )
-  import numpy as np
-
-  common_plot_params = {
-      "backend": "bokeh",
-      "show": False,
-  }
-
-
-  def plot_autocorr(xp):
-      ret = []
-      for chain in xp.all_chains():
-          chain_inference_data = xp.inference_data[chain]
-          ret.append(('plot_autocorr', chain, "", az.plot_autocorr(chain_inference_data, **common_plot_params)))
-      return ret
-
-
-  def plot_ecdf(xp):
-      ret = []
-      for chain in xp.all_chains():
-          chain_inference_data = xp.inference_data[chain]
-          for var in xp.all_vars():
-              values = chain_inference_data.posterior.sel(chain=chain)[var].values
-              if values.dtype == np.bool:
-                  continue
-              ret.append(('plot_ecdf', chain, var, az.plot_ecdf(values=values, **common_plot_params)))
-      return ret
-
-
-  def plot_dist(xp):
-      ret = []
-      for chain in xp.all_chains():
-          chain_inference_data = xp.inference_data[chain]
-          for var in xp.all_vars():
-              values = chain_inference_data.posterior.sel(chain=chain)[var].values
-              if values.dtype == np.bool:
-                  continue
-              ret.append(('plot_dist', chain, var, az.plot_dist(values=values, **common_plot_params)))
-      return ret
-
-
-  def plot_dot(xp):
-      ret = []
-      for chain in xp.all_chains():
-          chain_inference_data = xp.inference_data[chain]
-          for var in xp.all_vars():
-              values = chain_inference_data.posterior.sel(chain=chain)[var].values
-              if values.dtype == np.bool:
-                  continue
-              ret.append(('plot_dot', chain, var, az.plot_dot(values=values, **common_plot_params)))
-      return ret
-
-
-  def analyzer(xp):
-      plots = [
-          *plot_autocorr(xp),
-          # *plot_ecdf(xp),
-          # *plot_dist(xp),
-          # *plot_dot(xp),
-      ]
-      html = render_plots_to_html(plots)
-      return html.encode('utf-8')
-
-
-  def main():
-      flow = current_workflow()
-      exp = flow.experiment
-      save_result(analyzer(exp), "output.html")
-
-
-  if __name__ == '__main__':
-      main()
-default_data_script: |-
-  # /// script
-  # dependencies = [
-  #   "pandas",
-  #   "numpy",
-  #   "bokeh",
-  #   "requests",
-  #   "ruamel-yaml",
-  # ]
-  # ///
-
-  import pandas as pd
-  import numpy as np
-  from io import StringIO
-  from Coinfer import current_workflow
-
-
-  def interpret_data(data):
-      df = pd.read_csv(StringIO(data.decode("utf-8")), delimiter=';')
-      df = df[df['age'] >= 18]
-      # The return value must be json serialiable and will be used as model parameters:w
-      return [df['height'].to_list()]
-
-  flow = current_workflow()
-  flow.parse_data(interpret_data)
-
-default_workflow_settings: |-
-  coinfer:
-  experiment_name: "__EXPERIMENT_NAME__"
-
-  serverless:
-  engine: "fargate"  # fargate/lambda
-  env_cache: s3://julia-instantiate-cache
-  parallel: 1
-
-  sampling:
-  parallel_algorithm: "AbstractMCMC.MCMCSerial()"  # AbstractMCMC.MCMCThreads() or AbstractMCMC.MCMCDistributed()
-  iteration_count: 1000
-  num_chains: 1
-  mcmc_data:
-      directory: mcmcdata/
-  ppl: turing
-  # arguments to Julia executable:
-  #   If you use MCMCThreads, you need to add the correct `-t x` where x is the number of threads.
-  #   If you use MCMCDistributed, you need to add the correct `-p x` where x is the number of processes.
-  julia_args: []
-  sync: coinfer
-
-  analysis:
-  output_dir: ./analyzer_output/
-  sync: coinfer
-
-websocket: ""
+  147.955;34.869885;19;0'
+default_data_script: "# /// script\n# dependencies = [\n#   \"pandas\",\n#   \"numpy\"\
+  ,\n#   \"bokeh\",\n#   \"requests\",\n#   \"ruamel-yaml\",\n# ]\n# ///\n\nimport\
+  \ pandas as pd\nimport numpy as np\nfrom io import StringIO\nfrom Coinfer import\
+  \ current_workflow\n\n\ndef interpret_data(data):\n    df = pd.read_csv(StringIO(data.decode(\"\
+  utf-8\")), delimiter=';')\n    df = df[df['age'] >= 18]\n    # The return value\
+  \ must be json serialiable and will be used as model parameters:w\n    return [df['height'].to_list()]\n\
+  \nflow = current_workflow()\nflow.parse_data(interpret_data)"
+default_model: "using Pkg\nPkg.develop(; path=ARGS[1])  # load Coinfer.jl\nPkg.add(\"\
+  Turing\")\n\nusing Turing\nusing Coinfer\n\nflow = Coinfer.current_workflow()\n\n\
+  @model function line(height)\n    \u03BC ~ Normal(178, 20)\n    \u03C3 ~ Uniform(0,\
+  \ 50)\n\n    height ~ Normal(\u03BC, \u03C3)\nend\n\nflow.model = line"
+default_workflow_settings: "coinfer:\nexperiment_name: \"__EXPERIMENT_NAME__\"\n\n\
+  serverless:\nengine: \"fargate\"  # fargate/lambda\nenv_cache: s3://julia-instantiate-cache\n\
+  parallel: 1\n\nsampling:\nparallel_algorithm: \"AbstractMCMC.MCMCSerial()\"  # AbstractMCMC.MCMCThreads()\
+  \ or AbstractMCMC.MCMCDistributed()\niteration_count: 1000\nnum_chains: 1\nmcmc_data:\n\
+  \    directory: mcmcdata/\nppl: turing\n# arguments to Julia executable:\n#   If\
+  \ you use MCMCThreads, you need to add the correct `-t x` where x is the number\
+  \ of threads.\n#   If you use MCMCDistributed, you need to add the correct `-p x`\
+  \ where x is the number of processes.\njulia_args: []\nsync: coinfer\n\nanalysis:\n\
+  output_dir: ./analyzer_output/\nsync: coinfer"
+google_app_id: versatile-blend-464708-a0
+google_client_id: 1093329952197-v3oe8gknfun6m13r8a111286pk5kcvd4.apps.googleusercontent.com
+max_upload_sample_file: 4
+max_upload_sample_size: 5242880
+run_model_url: https://irwit7sps5eou6y5m3tq577msu0uhtpd.lambda-url.us-west-2.on.aws/
+upload_file_types": '{"csv": ["turing csv", "stan csv"], "nc": ["arviz netcdf"]}'
+websocket: wss://wsspr1.coinfer.ai
