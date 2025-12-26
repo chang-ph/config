@@ -142,9 +142,35 @@ default_data_script: |-
   def interpret_data(data):
       df = pd.read_csv(StringIO(data.decode("utf-8")), delimiter=';')
       df = df[df['age'] >= 18]
-      # The return value must be json serialiable and will be used as model parameters:w
+      # The return value must be json serializable and will be used as model parameters:w
       return [df['height'].to_list()]
 
   flow = current_workflow()
   flow.parse_data(interpret_data)
+default_workflow_settings: |-
+  coinfer:
+  experiment_name: "__EXPERIMENT_NAME__"
+
+  serverless:
+  engine: "fargate"  # fargate/lambda
+  env_cache: s3://julia-instantiate-cache
+  parallel: 1
+
+  sampling:
+  parallel_algorithm: "AbstractMCMC.MCMCSerial()"  # AbstractMCMC.MCMCThreads() or AbstractMCMC.MCMCDistributed()
+  iteration_count: 1000
+  num_chains: 1
+  mcmc_data:
+      directory: mcmcdata/
+  ppl: turing
+  # arguments to Julia executable:
+  #   If you use MCMCThreads, you need to add the correct `-t x` where x is the number of threads.
+  #   If you use MCMCDistributed, you need to add the correct `-p x` where x is the number of processes.
+  julia_args: []
+  sync: coinfer
+
+  analysis:
+  output_dir: ./analyzer_output/
+  sync: coinfer
+
 websocket: ""
