@@ -10,7 +10,7 @@ project_root = Path(__file__).parent.parent.parent
 
 def main():
     os.makedirs(project_root / BUILD_OUTPUT_FOLDER)
-    for file in Path(project_root).glob("config-*.yaml"):
+    for file in Path(project_root).glob("*-coinfer-ai.yaml"):
         if not file.is_file():
             continue
         config = yaml.safe_load(file.read_text())
