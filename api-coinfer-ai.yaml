@@ -194,3 +194,5 @@ default_startup_script: |-
       iteration_count,
       num_chains;
   )
+auth0_domain: login.coinfer.ai
+auth0_client_id: 1JnzhLTbBIelYCQz9jiDa3tDLsvhgJ0A
