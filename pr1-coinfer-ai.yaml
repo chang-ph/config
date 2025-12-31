@@ -175,6 +175,6 @@ google_app_id: versatile-blend-464708-a0
 google_client_id: 1093329952197-v3oe8gknfun6m13r8a111286pk5kcvd4.apps.googleusercontent.com
 max_upload_sample_file: 4
 max_upload_sample_size: 5242880
-run_model_url: https://0l1q3196na.execute-api.us-west-2.amazonaws.com/mystage
+run_model_url: https://07ka4n4yna.execute-api.us-west-2.amazonaws.com/prod
 upload_file_types: '{"csv": ["turing csv", "stan csv"], "nc": ["arviz netcdf"]}'
 websocket: wss://wsspr1.coinfer.ai
